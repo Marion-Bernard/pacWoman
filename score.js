@@ -1,0 +1,2 @@
+/* Enregistrer le score */
+

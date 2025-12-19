@@ -1,4 +1,4 @@
-# PacWoman 🟡👾
+# PacWoman 👾
 
 Fun study project — Pac-Man inspired game.
 

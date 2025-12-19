@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Snake Game</title>
+    <title>PacWoman</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -22,8 +22,15 @@
         <p class="text-white text-4xl z-30">Game Over</p>
     </div>
 
+    <div id="win-game" class="absolute inset-0 flex flex-col items-center justify-center hidden">
+        <div class="absolute inset-0 bg-yellow-300 opacity-50"></div>
+        <p class="text-black text-4xl z-30">Félicitations !!</p>
+        
+        <p class="text-black z-30">Cliquez pour rejouer</p>
+    </div>
+
 </body>
 
-<script src="jeu.js"></script>
+<script src="jeu.js"></script> 
 
 </html>

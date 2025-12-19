@@ -1,16 +1,32 @@
+/**********Gestion de la zone de jeu *************/
+
 const canvas = document.querySelector("#monCanvas")
 const ctx = canvas.getContext("2d")
 
-const direction = { x: 1, y: 0 }
-const snake = [{ x: 20, y: 20 }]
-const fruit = {}
+canvas.width = 400
+canvas.height = 400
+const cellSize = 20 
+
+const direction = {x: 1, y: 0}
+const pacman = {x: 20, y: 20}
+const fantome = {}
+
 let score = 0
 
-const fruitImage = new Image()
-fruitImage.src = './images/apple.png'
+let dotGrid = []
+
+/********Import image*****************/
+
+const pacmanImage = new Image()
+pacmanImage.src = './images/pacman.png'
+
+const dotImage = new Image()
+dotImage.src = './images/dot.png'
+
+const fantomeImage = new Image()
+fantomeImage.src = './images/fantome-blue.png'
 
 let intervalGame
-let intervalFruit
 
 /***************************/
 /*******Lancer le jeu*******/
@@ -21,37 +37,29 @@ function startGame() {
 }
 
 /***************************/
-/****Dessiner le serpent****/
+/****Dessiner pacman****/
 /***************************/
 
-function drawSnake() {
-    ctx.fillStyle = 'green'
-    snake.forEach(part => {
-        ctx.fillRect(part.x, part.y, 20, 20); // (x, y, largeur, hauteur)
-    })
+function drawPacman() {
+    ctx.drawImage(pacmanImage,pacman.x, pacman.y, cellSize, cellSize); // (x, y, largeur, hauteur)
 }
 
 /***************************/
-/****Déplacer le serpent****/
+/******Déplacer pacman******/
 /***************************/
 
-function moveSnake() {
-    const newHead = {
-        x: snake[0].x + direction.x * 20,
-        y: snake[0].y + direction.y * 20
+function movePacman() {
+    dotGrid = dotGrid.filter(item => !(item.x === pacman.x && item.y === pacman.y))
+    
+    pacman.x += direction.x * 20,
+    pacman.y += direction.y * 20
+    
+    score = 400 - dotGrid.length
+    updateScore(score)
+    console.log(dotGrid.length)
+    if(dotGrid.length == 0 ){
+        winGame()
     }
-
-    if(newHead.x == fruit.x && newHead.y == fruit.y){
-        generateFruit()
-        resetFruitInterval()
-        score+=5
-        updateScore(score)
-    } else {
-        snake.pop()
-    }
-
-    snake.unshift(newHead)
-    drawSnake()
 }
 
 /***************************/
@@ -59,114 +67,105 @@ function moveSnake() {
 /***************************/
 
 window.addEventListener('keydown', function (event) {
-    if (direction.x === 0) {
-        switch (event.key) {
-            case 'ArrowRight':
-                direction.x = - direction.y
+    switch (event.key) {
+        case 'ArrowRight':
+            if (pacman.x <380 ){
+                direction.x = 1
                 direction.y = 0
-                break
+            }            
+        break
 
-            case 'ArrowLeft':
-                direction.x = direction.y
+        case 'ArrowLeft':
+            if (pacman.x > 20 ){
+                direction.x = -1
                 direction.y = 0
-                break
-        }
-    } else {
-        switch (event.key) {
-            case 'ArrowRight':
-                direction.y = direction.x
-                direction.x = 0
-                break
+            }
+        break
 
-            case 'ArrowLeft':
-                direction.y = - direction.x
+        case 'ArrowUp':
+            if (pacman.y > 0 ){
+                direction.y = -1
                 direction.x = 0
-                break
-        }
+            }
+        break
+
+        case 'ArrowDown':
+            if (pacman.y < 380 ){
+                direction.y = 1
+                direction.x = 0
+            }
+        break
     }
 })
 
 /*************************************/
-/****Voir si le serpent est en vie****/
+/****Voir on est au niveau du mur*****/
 /*************************************/
 
-function checkDead() {
-    if (snake[0].x >= canvas.width || snake[0].x < 0 ||
-        snake[0].y >= canvas.height || snake[0].y < 0) {
-        gameOver();
+function checkWall() {
+    if (pacman.x == canvas.width-cellSize || pacman.x < cellSize) {
+            direction.x = 0
     }
-
-    const body = snake.slice(1)
-    const autoBiten = body.some(segment => segment.x === snake[0].x && segment.y === snake[0].y);
-    
-    if (autoBiten) {
-        gameOver();
+    if (pacman.y == canvas.height-cellSize || pacman.y < cellSize) {
+            direction.y = 0
     }
 }
 
-/*************************************/
-/*******Faire mourrir le serpent******/
-/*************************************/
+// /*************************************/
+// /***************Win Game**************/
+// /*************************************/
 
-const gameOverDiv = document.querySelector('#game-over')
+ const winGameDiv = document.querySelector('#win-game')
 
-function gameOver() {
+function winGame() {
     clearInterval(intervalGame)
-    gameOverDiv.classList.remove('hidden')
+    winGameDiv.classList.remove('hidden')
     localStorage.setItem('score', score);
 }
 
-gameOverDiv.addEventListener('click', function () {
-    window.location.href = '/index.html'
+winGameDiv.addEventListener('click', function () {
+         window.location.href = '/index.html'
 })
 
-/*************************************/
-/******************Fruits*************/
-/*************************************/
-
-function generateFruit(){
-    fruit.x = Math.floor(Math.random() * (canvas.width / 20)) * 20
-    fruit.y = Math.floor(Math.random() * (canvas.height / 20)) * 20
-}
-
-intervalFruit = setInterval(generateFruit,10000)
-
-function drawFruit() {
-    ctx.fillStyle = 'red'
-    ctx.drawImage(fruitImage,fruit.x, fruit.y, 20, 20); // (x, y, largeur, hauteur)
-}
-
-function resetFruitInterval() {
-    clearInterval(intervalFruit) // Nettoie l'intervalle précédent
-    intervalFruit = setInterval(generateFruit, 10000) // Démarre un nouvel intervalle
-    generateFruit() // Génère immédiatement un fruit
-}
-
-/*************************************/
-/***************Score*****************/
-/*************************************/
+// /*************************************/
+// /***************Score*****************/
+// /*************************************/
 
 function updateScore(score){
     document.querySelector('#score').innerText = score
 }
 
 
-/*************************************/
-/************Gameplay*****************/
-/*************************************/
+/************************************/
+/***Remplir la grille de point*******/
+/************************************/
+
+
+function fillGrid(image){    
+    for (let hauteur = 0 ; hauteur< canvas.height ; hauteur += cellSize ) {
+        for (let largeur = 0 ; largeur< canvas.width ; largeur += cellSize){
+           dotGrid.push({'x' : largeur, 'y' : hauteur})
+           ctx.drawImage(image, hauteur, largeur, cellSize, cellSize); // (image, x, y, largeur, hauteur)
+        }
+    } 
+}
+
+
+// /*************************************/
+// /************Gameplay*****************/
+// /*************************************/
 
 function play() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    moveSnake()
-    drawSnake()
-    drawFruit()
-    checkDead()
+    ctx.clearRect(pacman.x, pacman.y, cellSize, cellSize)
+    movePacman()
+    drawPacman()
+    checkWall()
 }
+
 
 window.onload = function () {
     startGame()
-    generateFruit()
-    drawFruit()
-    drawSnake()
-
+    fillGrid(dotImage)
+    drawPacman()
+    ctx.drawImage(fantomeImage,40, 60, cellSize, cellSize); // (x, y, largeur, hauteur)
 }
